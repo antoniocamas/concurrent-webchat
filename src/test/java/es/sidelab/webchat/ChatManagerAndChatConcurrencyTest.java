@@ -3,6 +3,7 @@ package es.sidelab.webchat;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -57,23 +58,28 @@ public class ChatManagerAndChatConcurrencyTest {
 	}
 	
 	private boolean userActionSimulator(final int userNumber) throws InterruptedException, TimeoutException {
-User user = new TestUser("userName_" + userNumber);
+		User user = new TestUser("userName_" + userNumber);
 		
 		try {
-			chatManager.newUser(user);
-		} catch (IllegalArgumentException e) {
-			return false;
-		}
-		
-		for(int i=0; i < 10; i++)
-		{
-			Chat chat = chatManager.newChat("Chat_" + i, 5, TimeUnit.SECONDS);
-			chat.addUser(user);
-			
-			for(User userInChat: chat.getUsers())
-			{
-				System.out.println("Chat " + chat.getName() + " with user " + userInChat.getName());
+			try {
+				chatManager.newUser(user);
+			} catch (IllegalArgumentException e) {
+				return false;
 			}
+			
+			for(int i=0; i < 10; i++)
+			{
+				Chat chat = chatManager.newChat("Chat_" + i, 5, TimeUnit.SECONDS);
+				chat.addUser(user);
+				
+				for(User userInChat: chat.getUsers())
+				{
+					System.out.println("Chat " + chat.getName() + " with user " + userInChat.getName());
+				}
+			}
+		} catch (ConcurrentModificationException exc) {
+			System.out.println("ConcurrentModificationException in user " + user.getName() + " ");
+			return false;
 		}
 		
 		return true;
