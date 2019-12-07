@@ -67,7 +67,7 @@ public class ChatManagerAndChatConcurrencyTest {
 				return false;
 			}
 			
-			for(int i=0; i < 10; i++)
+			for(int i=0; i < 5; i++)
 			{
 				Chat chat = chatManager.newChat("Chat_" + i, 5, TimeUnit.SECONDS);
 				chat.addUser(user);
