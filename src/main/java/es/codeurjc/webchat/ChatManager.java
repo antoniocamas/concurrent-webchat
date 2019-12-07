@@ -2,15 +2,15 @@ package es.codeurjc.webchat;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class ChatManager {
 
-	private Map<String, Chat> chats = new HashMap<>();
-	private Map<String, User> users = new HashMap<>();
+	private Map<String, Chat> chats = new ConcurrentHashMap<>();
+	private Map<String, User> users = new ConcurrentHashMap<>();
 	private int maxChats;
 
 	public ChatManager(int maxChats) {
@@ -18,12 +18,10 @@ public class ChatManager {
 	}
 
 	public void newUser(User user) {
-		
-		if(users.containsKey(user.getName())){
+		User retUser = users.putIfAbsent(user.getName(), user);
+		if(retUser != null){
 			throw new IllegalArgumentException("There is already a user with name \'"
 					+ user.getName() + "\'");
-		} else {
-			users.put(user.getName(), user);
 		}
 	}
 
@@ -34,18 +32,13 @@ public class ChatManager {
 			throw new TimeoutException("There is no enought capacity to create a new chat");
 		}
 
-		if(chats.containsKey(name)){
-			return chats.get(name);
-		} else {
-			Chat newChat = new Chat(this, name);
-			chats.put(name, newChat);
-			
+		Chat retChat = chats.putIfAbsent(name, new Chat(this, name));
+		if(retChat == null) {
 			for(User user : users.values()){
-				user.newChat(newChat);
+				user.newChat(chats.get(name));
 			}
-
-			return newChat;
 		}
+		return chats.get(name);
 	}
 
 	public void closeChat(Chat chat) {
