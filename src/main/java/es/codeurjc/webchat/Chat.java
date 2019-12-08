@@ -26,7 +26,6 @@ public class Chat {
 		for(User u : users.values()){
 			if (u != user) {
 				chatManager.launchCommandInUser(u.getName(), ()->u.newUserInChat(this, user));
-				//executors.get(u.getName()).execute(()->u.newUserInChat(this, user));
 				
 			}
 		}
@@ -36,7 +35,6 @@ public class Chat {
 		users.remove(user.getName());
 		for(User u : users.values()){
 			chatManager.launchCommandInUser(u.getName(), ()->u.userExitedFromChat(this, user));
-			//executors.get(u.getName()).execute(()->u.userExitedFromChat(this, user));
 		}
 	}
 
@@ -51,7 +49,6 @@ public class Chat {
 	public void sendMessage(User user, String message) {
 		for(User u : users.values()){
 			chatManager.launchCommandInUser(u.getName(), ()->u.newMessage(this, user, message));
-			//executors.get(u.getName()).execute(()->u.newMessage(this, user, message));
 		}
 	}
 

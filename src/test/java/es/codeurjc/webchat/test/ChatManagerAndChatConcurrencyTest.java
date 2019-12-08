@@ -1,6 +1,7 @@
-package es.sidelab.webchat;
+package es.codeurjc.webchat.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -29,9 +30,10 @@ public class ChatManagerAndChatConcurrencyTest {
 	@Test
 	public void GIVEN_ChatManger_and_Users_When_newChat_Then_no_exception() throws Throwable {
 
+		System.out.println("Starting Test Case");
 		final int numUsers = 4;
 		
-		ExecutorService executor =	Executors.newFixedThreadPool(4);
+		ExecutorService executor =	Executors.newFixedThreadPool(numUsers);
 		CompletionService<Boolean> completionService = new ExecutorCompletionService<>(executor);
 		
 			
@@ -40,25 +42,35 @@ public class ChatManagerAndChatConcurrencyTest {
 			int userNumber = i;
 			completionService.submit(() -> this.userActionSimulator(userNumber));
 		}
-		
+	
 		for (int i = 0; i<numUsers; i++) 
 		{
-			try {
-				Future<Boolean> futureExecutionResut = completionService.take();
-				boolean success = futureExecutionResut.get();
-				assertThat(success).as("The execution of at least one user has failed").isTrue();
-			} catch (ExecutionException e) {
-				throw e.getCause();
-			}
+			Future<Boolean> futureExecutionResut = completionService.take();
+			
+			assertThat(futureExecutionResut.isDone())
+				.as("The execution of at least one user has failed")
+				.isTrue();
+			
+			boolean success = futureExecutionResut.get();
+			assertThat(success).as("The execution of at least one user has failed").isTrue();
 		}
+		
+		this.chatManager.close();
+		
+		executor.shutdown();
+		executor.awaitTermination(2, TimeUnit.SECONDS); 
 		
 		assertThat(chatManager.getUsers().size()).isEqualTo(numUsers);
 		assertThat(chatManager.getChats().size()).isEqualTo(5);
-					
+		for (Chat chat: chatManager.getChats()) {
+			assertThat(chat.getUsers().size()).isEqualTo(numUsers);
+		}
 	}
 	
 	private boolean userActionSimulator(final int userNumber) throws InterruptedException, TimeoutException {
 		User user = new TestUser("userName_" + userNumber);
+		
+		System.out.println("[" + Thread.currentThread().getName() + "]" + "Creating user " + user.getName());
 		
 		try {
 			try {
@@ -74,7 +86,7 @@ public class ChatManagerAndChatConcurrencyTest {
 				
 				for(User userInChat: chat.getUsers())
 				{
-					System.out.println("Chat " + chat.getName() + " with user " + userInChat.getName());
+					System.out.println("[" + Thread.currentThread().getName() + "]" + "Chat " + chat.getName() + " has this users " + userInChat.getName());
 				}
 			}
 		} catch (ConcurrentModificationException exc) {

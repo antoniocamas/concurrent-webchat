@@ -1,4 +1,4 @@
-package es.sidelab.webchat;
+package es.codeurjc.webchat.test;
 
 import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.User;
@@ -22,32 +22,36 @@ public class TestUser implements User {
 
 	@Override
 	public void newChat(Chat chat) {
-		System.out.println("New chat " + chat.getName());
+		println("New chat " + chat.getName());
 	}
 
 	@Override
 	public void chatClosed(Chat chat) {
-		System.out.println("Chat " + chat.getName() + " closed ");
+		println("Chat " + chat.getName() + " closed ");
 	}
 
 	@Override
 	public void newUserInChat(Chat chat, User user) {
-		System.out.println("New user " + user.getName() + " in chat " + chat.getName());
+		println("New user " + user.getName() + " in chat " + chat.getName());
 	}
 
 	@Override
 	public void userExitedFromChat(Chat chat, User user) {
-		System.out.println("User " + user.getName() + " exited from chat " + chat.getName());
+		println("User " + user.getName() + " exited from chat " + chat.getName());
 	}
 
 	@Override
 	public void newMessage(Chat chat, User user, String message) {
-		System.out.println("New message '" + message + "' from user " + user.getName()
+		println("New message '" + message + "' from user " + user.getName()
 				+ " in chat " + chat.getName());
 	}
 
 	@Override
 	public String toString() {
 		return "User[" + name + "]";
-	}	
+	}
+	
+	private void println(String message) {
+		System.out.println("[" + Thread.currentThread().getName() + "][" + this.name + "] " + message);
+	}
 }

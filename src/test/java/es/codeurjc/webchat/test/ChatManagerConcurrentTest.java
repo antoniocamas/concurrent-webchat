@@ -1,8 +1,9 @@
-package es.sidelab.webchat;
+package es.codeurjc.webchat.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,16 +19,12 @@ import es.codeurjc.webchat.ChatManager;
 
 public class ChatManagerConcurrentTest {
 
-	private ChatManager chatManager = new ChatManager(50);
-	
-	@Before
-	public void setUp() {
-		this.chatManager = new ChatManager(50);
-	}
+	private ChatManager chatManager;
 	
 	@Test
 	public void test_01_GIVEN_ChatManger_When_newUser_Then_no_user_duplicated() throws Throwable {
 
+		this.chatManager = new ChatManager(50);
 		final int numUsers = 10;
 		ExecutorService executor =	Executors.newFixedThreadPool(10);
 		CompletionService<Boolean> completionService = new ExecutorCompletionService<>(executor);
@@ -35,8 +32,7 @@ public class ChatManagerConcurrentTest {
 			
 		for (int i=0 ; i < numUsers; i++)
 		{
-			int userNumber = i;
-			completionService.submit(() -> this.test_01_userActionSimulator(userNumber));
+			completionService.submit(() -> this.test_01_createRepeadtedUser());
 		}
 		
 		for (int i = 0; i<numUsers; i++) 
@@ -47,11 +43,15 @@ public class ChatManagerConcurrentTest {
 		}
 		
 		this.chatManager.close();
+		executor.shutdown();
+		executor.awaitTermination(2, TimeUnit.SECONDS); 
+		
+		
 		assertThat(chatManager.getUsers().size()).isEqualTo(1);
 					
 	}
 	
-	private boolean test_01_userActionSimulator(final int userNumber) {
+	private boolean test_01_createRepeadtedUser() {
 		try {
 			chatManager.newUser(new TestUser("repeatedUserName"));
 		} catch (IllegalArgumentException e) {}
@@ -62,39 +62,57 @@ public class ChatManagerConcurrentTest {
 	@Test
 	public void test_02_GIVEN_ChatManger_When_newChat_Then_no_chat_duplicated() throws Throwable {
 
-		final int numUsers = 10;
-		ExecutorService executor =	Executors.newFixedThreadPool(10);
+		final int numUsers = 4;
+		final int numOfChatsPerUser = 50;
+		this.chatManager = new ChatManager(numUsers*numOfChatsPerUser);
+		ExecutorService executor =	Executors.newFixedThreadPool(numUsers);
 		CompletionService<Boolean> completionService = new ExecutorCompletionService<>(executor);
 		
 			
 		for (int i=0 ; i < numUsers; i++)
 		{
 			int userNumber = i;
-			completionService.submit(() -> this.test_02_userActionSimulator(userNumber));
+			completionService.submit(
+					() -> this.test_02_createUsersAndChats(userNumber, numOfChatsPerUser)
+			);
 		}
+		
 		
 		for (int i = 0; i<numUsers; i++) 
 		{
-			Future<Boolean> futureExecutionResut = completionService.take();
-			boolean done = futureExecutionResut.isDone();
-			assertThat(done).as("The execution of at least one executor has failed").isTrue();
+			Future<Boolean> futureExecutionResult = completionService.take();
+			
+			assertThat(futureExecutionResult.get())
+				.as("The execution of at least one executor has failed")
+				.isTrue();
+					
+			assertThat(futureExecutionResult.isDone())
+				.as("The execution of at least one executor has finished Unexpectedly")
+				.isTrue();
 		}
 		
 		this.chatManager.close();
-		assertThat(chatManager.getChats().size()).isEqualTo(10);
+		executor.shutdown();
+		executor.awaitTermination(2, TimeUnit.SECONDS); 
+		
+		assertThat(chatManager.getChats().size()).isEqualTo(numOfChatsPerUser);
 					
 	}
 	
-	private boolean test_02_userActionSimulator(final int userNumber) throws InterruptedException, TimeoutException {
-		try {
-			chatManager.newUser(new TestUser("userName_" + userNumber));
-		} catch (IllegalArgumentException e) {}
+	private boolean test_02_createUsersAndChats(final int userNumber, final int numOfChatsPerUser) throws InterruptedException, TimeoutException {
 		
-		for(int i=0; i < 10; i++)
+		chatManager.newUser(new TestUser("userName_" + userNumber));		
+		
+		Chat returnedChat;
+		for(int i=0; i < numOfChatsPerUser; i++)
 		{
-			chatManager.newChat("Chat_" + i, 5, TimeUnit.SECONDS);
+			String chatName = "Chat_" + i;
+			returnedChat = chatManager.newChat(chatName, 5, TimeUnit.SECONDS);
+			if(!returnedChat.getName().equals(chatName)) {
+				System.out.println(returnedChat.getName() +" != " + chatName);
+				return false;
+			}
 		}
-		
 		return true;
 	}
 

@@ -1,4 +1,4 @@
-package es.sidelab.webchat;
+package es.codeurjc.webchat.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -16,7 +16,7 @@ import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
 
-public class ChatManagerUserNotificationTest {
+public class ChatManagerUserSendMessageTest {
 
 	@Test
 	public void test_01_GIVEN_ChatManger_When_sendMessages_Then_are_sent_in_parallel() throws InterruptedException, TimeoutException {
@@ -47,14 +47,15 @@ public class ChatManagerUserNotificationTest {
 		createdChat.addUser(userReceiver2);
 		createdChat.addUser(userReceiver3);
 		
-		Answer<Object> delayedAnswer = new Answer<Object>() {
-			public Object answer(InvocationOnMock invocation) throws InterruptedException {
+		Answer<Void> delayedAnswer = new Answer<Void>() {
+			public Void answer(InvocationOnMock invocation) throws InterruptedException {
 				Thread.sleep(1000);
 				latch.countDown();
 				return null;
 			}
 		};
 				
+		Thread.sleep(10);
 		doAnswer(delayedAnswer).when(userReceiver1).newMessage(any(Chat.class), any(User.class), anyString());
 		doAnswer(delayedAnswer).when(userReceiver2).newMessage(any(Chat.class), any(User.class), anyString());
 		doAnswer(delayedAnswer).when(userReceiver3).newMessage(any(Chat.class), any(User.class), anyString());
@@ -110,9 +111,11 @@ public class ChatManagerUserNotificationTest {
 				return null;
 			}
 		};
-				
+		
+		Thread.sleep(10);
 		doAnswer(delayedAnswer).when(userReceiver1).newMessage(any(Chat.class), any(User.class), anyString());
 				
+		
 		long startTime = System.currentTimeMillis();
 		
 		createdChat.sendMessage(userSender, "test message 1");
