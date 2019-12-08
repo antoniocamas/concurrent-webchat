@@ -1,6 +1,7 @@
 package es.sidelab.webchat;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.*;
 
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -42,17 +43,12 @@ public class ChatManagerTest {
 
 		ChatManager chatManager = new ChatManager(5);
 
-		final String[] newUser = new String[1];
-
-		TestUser user1 = new TestUser("user1") {
-			@Override
-			public void newUserInChat(Chat chat, User user) {
-				newUser[0] = user.getName();
-			}
-		};
-
-		TestUser user2 = new TestUser("user2");
-
+		User user1 = mock(TestUser.class);
+		User user2 = mock(TestUser.class);
+		
+		when(user1.getName()).thenReturn("user1");
+		when(user2.getName()).thenReturn("user2");
+		
 		chatManager.newUser(user1);
 		chatManager.newUser(user2);
 
@@ -61,8 +57,6 @@ public class ChatManagerTest {
 		chat.addUser(user1);
 		chat.addUser(user2);
 
-		assertTrue("Notified new user '" + newUser[0] + "' is not equal than user name 'user2'",
-				"user2".equals(newUser[0]));
-
+		verify(user1).newUserInChat(chat, user2);
 	}
 }
