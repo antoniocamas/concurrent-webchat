@@ -1,9 +1,8 @@
 package es.sidelab.webchat;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -18,24 +17,20 @@ public class ChatManagerTest {
 	@Test
 	public void newChat() throws InterruptedException, TimeoutException {
 
-		// Crear el chat Manager
 		ChatManager chatManager = new ChatManager(5);
 
-		// Crear un usuario que guarda en chatName el nombre del nuevo chat
-		final String[] chatName = new String[1];
+		User testUser = mock(TestUser.class);
+		when(testUser.getName()).thenReturn("testUser");
+		
+		chatManager.newUser(testUser);
+		Chat createdChat = chatManager.newChat("testChat", 5, TimeUnit.SECONDS);
 
-		chatManager.newUser(new TestUser("user") {
-			public void newChat(Chat chat) {
-				chatName[0] = chat.getName();
-			}
-		});
-
-		// Crear un nuevo chat en el chatManager
-		chatManager.newChat("Chat", 5, TimeUnit.SECONDS);
-
-		// Comprobar que el chat recibido en el método 'newChat' se llama 'Chat'
-		assertTrue("The method 'newChat' should be invoked with 'Chat', but the value is "
-				+ chatName[0], Objects.equals(chatName[0], "Chat"));
+		//Wait for the threads to finish. Needed before checking calls in the test.
+		chatManager.close();
+		
+		verify(testUser).newChat(createdChat);
+		assertThat(createdChat.getName()).isEqualTo("testChat");
+		
 	}
 
 	@Test
@@ -56,7 +51,10 @@ public class ChatManagerTest {
 
 		chat.addUser(user1);
 		chat.addUser(user2);
-
+		
+		//Wait for the threads to finish. Needed before checking calls in the test.
+		chatManager.close();
+		
 		verify(user1).newUserInChat(chat, user2);
 	}
 }

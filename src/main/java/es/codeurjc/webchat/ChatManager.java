@@ -78,9 +78,10 @@ public class ChatManager {
 		return users.get(userName);
 	}
 
-	public void close() {
+	public void close() throws InterruptedException {
 		for(User u : users.values()){
 			executors.get(u.getName()).shutdown();
+			executors.get(u.getName()).awaitTermination(1, TimeUnit.SECONDS);
 		}
 	}
 }

@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
+import org.junit.Before;
 
 import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
@@ -18,6 +19,11 @@ import es.codeurjc.webchat.ChatManager;
 public class ChatManagerConcurrentTest {
 
 	private ChatManager chatManager = new ChatManager(50);
+	
+	@Before
+	public void setUp() {
+		this.chatManager = new ChatManager(50);
+	}
 	
 	@Test
 	public void test_01_GIVEN_ChatManger_When_newUser_Then_no_user_duplicated() throws Throwable {
@@ -40,6 +46,7 @@ public class ChatManagerConcurrentTest {
 			assertThat(done).as("The execution of at least one executor has failed").isTrue();
 		}
 		
+		this.chatManager.close();
 		assertThat(chatManager.getUsers().size()).isEqualTo(1);
 					
 	}
@@ -73,6 +80,7 @@ public class ChatManagerConcurrentTest {
 			assertThat(done).as("The execution of at least one executor has failed").isTrue();
 		}
 		
+		this.chatManager.close();
 		assertThat(chatManager.getChats().size()).isEqualTo(10);
 					
 	}
