@@ -4,15 +4,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Chat {
 
 	private String name;
 	private Map<String, User> users = new ConcurrentHashMap<>();
-	private Map<String, ExecutorService> executors = new ConcurrentHashMap<>();
-	
+		
 	private ChatManager chatManager;
 
 	public Chat(ChatManager chatManager, String name) {
@@ -26,10 +23,10 @@ public class Chat {
 
 	public void addUser(User user) {
 		users.putIfAbsent(user.getName(), user);
-		executors.putIfAbsent(user.getName(), Executors.newSingleThreadExecutor());
 		for(User u : users.values()){
 			if (u != user) {
-				executors.get(u.getName()).execute(()->u.newUserInChat(this, user));
+				chatManager.launchCommandInUser(u.getName(), ()->u.newUserInChat(this, user));
+				//executors.get(u.getName()).execute(()->u.newUserInChat(this, user));
 				
 			}
 		}
@@ -38,7 +35,8 @@ public class Chat {
 	public void removeUser(User user) {
 		users.remove(user.getName());
 		for(User u : users.values()){
-			executors.get(u.getName()).execute(()->u.userExitedFromChat(this, user));
+			chatManager.launchCommandInUser(u.getName(), ()->u.userExitedFromChat(this, user));
+			//executors.get(u.getName()).execute(()->u.userExitedFromChat(this, user));
 		}
 	}
 
@@ -52,7 +50,8 @@ public class Chat {
 
 	public void sendMessage(User user, String message) {
 		for(User u : users.values()){
-			executors.get(u.getName()).execute(()->u.newMessage(this, user, message));
+			chatManager.launchCommandInUser(u.getName(), ()->u.newMessage(this, user, message));
+			//executors.get(u.getName()).execute(()->u.newMessage(this, user, message));
 		}
 	}
 
