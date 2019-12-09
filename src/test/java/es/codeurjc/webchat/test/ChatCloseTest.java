@@ -18,7 +18,7 @@ import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
 
-public class ChatManagerCloseChatTest {
+public class ChatCloseTest {
 
 	@Test
 	public void test_01_GIVEN_ChatManger_When_closeChat_Then_allUserNotified() throws InterruptedException, TimeoutException {
@@ -52,7 +52,7 @@ public class ChatManagerCloseChatTest {
 	}
 	
 	@Test
-	public void test_03_GIVEN_ChatManger_When_closeChats_Then_chats_are_closed() throws Throwable {
+	public void test_02_GIVEN_ChatManger_When_closeChats_Then_chats_are_closed() throws Throwable {
 		final int numUsers = 4;
 		final int numOfChatsPerUser = 50;
 		ChatManager	chatManager = new ChatManager(numUsers*numOfChatsPerUser);
@@ -64,22 +64,22 @@ public class ChatManagerCloseChatTest {
 			
 			if (userNumber % 2 == 0) {
 				concurrencyMngr.submitTask(
-						() -> this.whenForTest_03_usersCreatingChats(chatManager, userNumber, numOfChatsPerUser));
+						() -> this.whenForTest_02_usersCreatingChats(chatManager, userNumber, numOfChatsPerUser));
 			} else {
 				concurrencyMngr.submitTask(
-						() -> this.whenForTest_03_closeAllChats(chatManager));
+						() -> this.whenForTest_02_closeAllChats(chatManager));
 			}
 		}
 		
 		concurrencyMngr.assertThatAllExecutionsFinishOK(numUsers*2);
 		
-		this.whenForTest_03_closeAllChats(chatManager);
+		this.whenForTest_02_closeAllChats(chatManager);
 		concurrencyMngr.shutdownAllExecutors(); 
 		
 		assertThat(chatManager.getChats().size()).isEqualTo(0);
 	}
 	
-	private boolean whenForTest_03_usersCreatingChats(ChatManager chatManager, final int userNumber, final int numOfChatsPerUser) throws InterruptedException, TimeoutException {
+	private boolean whenForTest_02_usersCreatingChats(ChatManager chatManager, final int userNumber, final int numOfChatsPerUser) throws InterruptedException, TimeoutException {
 		
 		chatManager.newUser(new TestUser("userName_" + userNumber));		
 
@@ -91,7 +91,7 @@ public class ChatManagerCloseChatTest {
 		return true;
 	}
 	
-	private boolean whenForTest_03_closeAllChats(ChatManager chatManager) throws InterruptedException, TimeoutException {
+	private boolean whenForTest_02_closeAllChats(ChatManager chatManager) throws InterruptedException, TimeoutException {
 		
 	for(Chat chat: chatManager.getChats())
 	{

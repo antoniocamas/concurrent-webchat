@@ -18,7 +18,7 @@ import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
 
-public class ChatManagerUserSendMessageTest {
+public class ChatUserSendMessageTest {
 
 	@Test
 	public void test_01_GIVEN_ChatManger_When_sendMessages_Then_are_sent_in_parallel() throws InterruptedException, TimeoutException {
