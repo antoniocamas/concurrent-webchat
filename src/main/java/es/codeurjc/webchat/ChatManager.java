@@ -17,8 +17,6 @@ public class ChatManager {
 	private Map<String, User> users = new ConcurrentHashMap<>();
 	private Map<String, ExecutorService> executors = new ConcurrentHashMap<>();
 	private int maxChats;	
-	private Object chatsLock = new Object();	
-	
 	
 	public ChatManager(int maxChats) {
 		this.maxChats = maxChats;
@@ -41,41 +39,37 @@ public class ChatManager {
 	public Chat newChat(String name, long timeout, TimeUnit unit) throws InterruptedException,
 			TimeoutException {
 
-		synchronized(chatsLock) {
-			if (chats.size() < maxChats) {
-				Chat retChat = chats.putIfAbsent(name, new Chat(this, name));
-				if(retChat == null) {
-					for(User user : users.values()){
-						System.out.println("[" + Thread.currentThread().getName() + "]" +"LAUNCHING CHAT: " + chats.get(name).getName() + " . USER: " + user.getName());
-						Chat chat = chats.get(name);
-						this.launchCommandInUser(user.getName(), ()-> user.newChat(chat));
-						System.out.println("[" + Thread.currentThread().getName() + "]" +"LAUNCHING CHAT: " + chats.get(name).getName() + " . USER: " + user.getName() +" OK!");
-					}
+		if (chats.size() < maxChats) {
+			Chat chat = new Chat(this, name);
+			Chat retChat = chats.putIfAbsent(name, chat);
+			if(retChat == null) {
+				for(User user : users.values()){
+					System.out.println("[" + Thread.currentThread().getName() + "]" +"LAUNCHING CHAT: " + chat.getName() + " . USER: " + user.getName());
+					this.launchCommandInUser(user.getName(), ()-> user.newChat(chat));
+					System.out.println("[" + Thread.currentThread().getName() + "]" +"LAUNCHING CHAT: " + chat.getName() + " . USER: " + user.getName() +" OK!");
 				}
 			}
-			else {
-				throw new TimeoutException("There is no enought capacity to create a new chat");
-			}
+		}
+		else {
+			throw new TimeoutException("There is no enought capacity to create a new chat");
 		}
 		return chats.get(name);
 	}
 	
 
 	public void closeChat(Chat chat) {
-		synchronized(chatsLock) {
+		Chat removedChat = chats.remove(chat.getName());
+		if (removedChat == null) {
+			throw new IllegalArgumentException(
+					"Trying to remove an unknown chat with name \'"
+							+ chat.getName() + "\'");
 
-			Chat removedChat = chats.remove(chat.getName());
-			if (removedChat == null) {
-				throw new IllegalArgumentException(
-						"Trying to remove an unknown chat with name \'"
-						+ chat.getName() + "\'");
-	
-			}
-	
-			for(User user : users.values()){
-				this.launchCommandInUser(user.getName(), ()-> user.chatClosed(removedChat));
-			}
 		}
+
+		for(User user : users.values()){
+			this.launchCommandInUser(user.getName(), ()-> user.chatClosed(removedChat));
+		}
+
 	}
 
 	public void launchCommandInUser(String userName, Runnable command) {
