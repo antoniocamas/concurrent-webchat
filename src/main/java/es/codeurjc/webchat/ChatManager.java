@@ -8,24 +8,24 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 
 public class ChatManager {
 
 	private Map<String, Chat> chats = new ConcurrentHashMap<>();
 	private Map<String, User> users = new ConcurrentHashMap<>();
 	private Map<String, ExecutorService> executors = new ConcurrentHashMap<>();
-	private int maxChats;	
+	private final Semaphore chatSemaphore; 
 	
 	public ChatManager(int maxChats) {
-		this.maxChats = maxChats;
+		chatSemaphore = new Semaphore(maxChats, true);
 	}
 
 	public void newUser(User user) {
 		//To avoid exclusion here putting the executor has to be previous to 
 		// putting the user. Otherwise there will be race conditions when a 
-		// Thread list and user and tries to use it's executor.
+		// users are iterated and executor for a given user is tried to be used.
 		
 		executors.putIfAbsent(user.getName(), Executors.newSingleThreadExecutor());
 		User retUser = users.putIfAbsent(user.getName(), user);
@@ -39,14 +39,12 @@ public class ChatManager {
 	public Chat newChat(String name, long timeout, TimeUnit unit) throws InterruptedException,
 			TimeoutException {
 
-		if (chats.size() < maxChats) {
+		if (chatSemaphore.tryAcquire(timeout, unit)) {
 			Chat chat = new Chat(this, name);
 			Chat retChat = chats.putIfAbsent(name, chat);
 			if(retChat == null) {
 				for(User user : users.values()){
-					System.out.println("[" + Thread.currentThread().getName() + "]" +"LAUNCHING CHAT: " + chat.getName() + " . USER: " + user.getName());
 					this.launchCommandInUser(user.getName(), ()-> user.newChat(chat));
-					System.out.println("[" + Thread.currentThread().getName() + "]" +"LAUNCHING CHAT: " + chat.getName() + " . USER: " + user.getName() +" OK!");
 				}
 			}
 		}
@@ -66,6 +64,8 @@ public class ChatManager {
 
 		}
 
+		chatSemaphore.release();
+		
 		for(User user : users.values()){
 			this.launchCommandInUser(user.getName(), ()-> user.chatClosed(removedChat));
 		}
