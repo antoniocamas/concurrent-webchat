@@ -74,5 +74,67 @@ public class ChatManagerNewChatTimeOutTest {
 		return true;
 	}
 
+	@Test
+	public void test_03_GIVEN_ChatManger_When_newChat_exits_Then_doesn_count() 
+			throws InterruptedException, TimeoutException {
+
+		final int maxChats = 2;
+		final long timeout = 500;
+		ChatManager chatManager = new ChatManager(maxChats);
+		
+		for(int i=0; i<maxChats; i++) {
+			chatManager.newChat("RepeatedChatName", timeout, TimeUnit.MILLISECONDS);
+		}
+				
+		Chat fittinChat = chatManager.newChat(
+				"FittingChat", timeout, TimeUnit.MILLISECONDS);
+		
+		chatManager.close();
+		
+		assertThat(chatManager.getChats().size()).isEqualTo(maxChats);
+		assertThat(chatManager.getChat("FittingChat")).isEqualTo(fittinChat);
+	}
+
+	@Test
+	public void test_04_GIVEN_ChatManger_Full_When_closeChat_isBad_Then_No_Room() 
+			throws InterruptedException, TimeoutException, ExecutionException {
+
+		final int maxChats = 3;
+		final long timeout = 100;
+		ChatManager chatManager = new ChatManager(maxChats);
+		TestConcurrencyManager concurrencyMngr = new TestConcurrencyManager(chatManager, 1);
+		
+		for(int i=0; i<maxChats; i++) {
+			chatManager.newChat("testChat_" + i, timeout, TimeUnit.MILLISECONDS);
+		}
+		
+		concurrencyMngr.submitTask(
+				()->whenForTest_04_closeNotExistantChat(chatManager));
+				
+		Throwable thrown = catchThrowable(
+				()->chatManager.newChat(
+						"notFittingChat", timeout, TimeUnit.MILLISECONDS));
+		
+		concurrencyMngr.assertThatAllExecutionsFinishOK(1);
+		concurrencyMngr.shutdownAllExecutors(); 
+		chatManager.close();
+		
+		assertThat(thrown)
+			.hasMessage("There is no enought capacity to create a new chat")
+			.isInstanceOf(TimeoutException.class)
+			.hasNoCause();
+	
+	}
+	
+	private boolean whenForTest_04_closeNotExistantChat(ChatManager chatManager){
+		
+		try {
+			chatManager.closeChat(new Chat(chatManager, "NonExistantChat"));
+		}catch(IllegalArgumentException exc) {
+			return true;
+		}
+
+		return false;
+	}
 	
 }

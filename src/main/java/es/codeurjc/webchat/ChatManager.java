@@ -47,6 +47,9 @@ public class ChatManager {
 					this.launchCommandInUser(user.getName(), ()-> user.newChat(chat));
 				}
 			}
+			else {
+				chatSemaphore.release();
+			}
 		}
 		else {
 			throw new TimeoutException("There is no enought capacity to create a new chat");

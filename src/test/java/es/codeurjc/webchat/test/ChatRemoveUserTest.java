@@ -10,10 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
@@ -21,11 +17,13 @@ import es.codeurjc.webchat.User;
 public class ChatRemoveUserTest {
 
 	@Test
-	public void test_01_GIVEN_Chat_When_removeUser_Then_allUserNotified() throws InterruptedException, TimeoutException {
+	public void test_01_GIVEN_Chat_When_removeUser_Then_allUserNotified() 
+			throws InterruptedException, TimeoutException {
 
 		final int numUsers = 3;
 		CountDownLatch latch = new CountDownLatch(numUsers-1);
-		DelayedAnswerWithCountDownForMockBuilder countDownLatch = new DelayedAnswerWithCountDownForMockBuilder(latch);
+		DelayedAnswerWithCountDownForMockBuilder countDownLatch = 
+				new DelayedAnswerWithCountDownForMockBuilder(latch);
 		ChatManager chatManager = new ChatManager(5);
 		List<User> users = new ArrayList<>();
 		
@@ -56,7 +54,9 @@ public class ChatRemoveUserTest {
 	}
 	
 	@Test
-	public void test_02_GIVEN_Chat_When_usersSendingMessages_and_removeUser_Then_no_Race_Conditions() throws Throwable {
+	public void test_02_GIVEN_Chat_When_usersSendingMessages_and_removeUser_Then_no_Race_Conditions() 
+			throws Throwable {
+		
 		final int numUsers = 4;
 		final int numOfMessagesPerUser = 50;
 		ChatManager	chatManager = new ChatManager(1);

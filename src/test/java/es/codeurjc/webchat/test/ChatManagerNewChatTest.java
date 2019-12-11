@@ -10,9 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
@@ -21,11 +18,13 @@ import es.codeurjc.webchat.User;
 public class ChatManagerNewChatTest {
 
 	@Test
-	public void test_01_GIVEN_ChatManger_When_newChat_Then_allUserNotified() throws InterruptedException, TimeoutException {
+	public void test_01_GIVEN_ChatManger_When_newChat_Then_allUserNotified() 
+			throws InterruptedException, TimeoutException {
 
 		final int numUsers = 3;
 		CountDownLatch latch = new CountDownLatch(numUsers);
-		DelayedAnswerWithCountDownForMockBuilder countDownLatch = new DelayedAnswerWithCountDownForMockBuilder(latch);
+		DelayedAnswerWithCountDownForMockBuilder countDownLatch = 
+				new DelayedAnswerWithCountDownForMockBuilder(latch);
 		ChatManager chatManager = new ChatManager(5);
 		List<User> users = new ArrayList<>();
 		

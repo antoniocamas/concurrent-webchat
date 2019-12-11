@@ -1,15 +1,8 @@
 package es.codeurjc.webchat.test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,7 +21,8 @@ public class ChatManagerAndChatConcurrencyTest {
 	private ChatManager chatManager = new ChatManager(50);
 	
 	@Test
-	public void GIVEN_ChatManger_and_Users_When_newChat_Then_no_exception() throws Throwable {
+	public void GIVEN_ChatManger_and_Users_When_newChat_Then_no_exception() 
+			throws Throwable {
 
 		System.out.println("Starting Test Case");
 		final int numUsers = 4;
@@ -67,10 +61,13 @@ public class ChatManagerAndChatConcurrencyTest {
 		}
 	}
 	
-	private boolean userActionSimulator(final int userNumber) throws InterruptedException, TimeoutException {
+	private boolean userActionSimulator(final int userNumber) 
+			throws InterruptedException, TimeoutException {
+		
 		User user = new TestUser("userName_" + userNumber);
 		
-		System.out.println("[" + Thread.currentThread().getName() + "]" + "Creating user " + user.getName());
+		System.out.println(
+				"[" + Thread.currentThread().getName() + "]" + "Creating user " + user.getName());
 		
 		try {
 			try {
@@ -86,7 +83,10 @@ public class ChatManagerAndChatConcurrencyTest {
 				
 				for(User userInChat: chat.getUsers())
 				{
-					System.out.println("[" + Thread.currentThread().getName() + "]" + "Chat " + chat.getName() + " has this users " + userInChat.getName());
+					System.out.println(
+							"[" + Thread.currentThread().getName() + "]" 
+									+ "Chat " + chat.getName() + " has this users " 
+									+ userInChat.getName());
 				}
 			}
 		} catch (ConcurrentModificationException exc) {

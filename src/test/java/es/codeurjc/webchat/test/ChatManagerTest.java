@@ -25,7 +25,7 @@ public class ChatManagerTest {
 		chatManager.newUser(testUser);
 		Chat createdChat = chatManager.newChat("testChat", 5, TimeUnit.SECONDS);
 
-		//Wait for the threads to finish. Needed before checking calls in the test.
+		//Wait for the chatManagerExector to finish
 		chatManager.close();
 		
 		verify(testUser).newChat(createdChat);
@@ -52,7 +52,6 @@ public class ChatManagerTest {
 		chat.addUser(user1);
 		chat.addUser(user2);
 		
-		//Wait for the threads to finish. Needed before checking calls in the test.
 		chatManager.close();
 		
 		verify(user1).newUserInChat(chat, user2);

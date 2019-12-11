@@ -31,6 +31,7 @@ public class TestConcurrencyManager {
 
 	public void assertThatAllExecutionsFinishOK(final int numTask)
 			throws InterruptedException, ExecutionException {
+		
 		for (int i = 0; i<numTask; i++) 
 		{
 			Future<Boolean> futureExecutionResult = this.completionService.take();
@@ -50,7 +51,4 @@ public class TestConcurrencyManager {
 		this.executor.shutdown();
 		this.executor.awaitTermination(2, TimeUnit.SECONDS);
 	}
-
-
-	
 }

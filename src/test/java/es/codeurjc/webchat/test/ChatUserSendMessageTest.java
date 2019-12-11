@@ -11,9 +11,6 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
 import es.codeurjc.webchat.User;
@@ -21,11 +18,13 @@ import es.codeurjc.webchat.User;
 public class ChatUserSendMessageTest {
 
 	@Test
-	public void test_01_GIVEN_ChatManger_When_sendMessages_Then_are_sent_in_parallel() throws InterruptedException, TimeoutException {
+	public void test_01_GIVEN_ChatManger_When_sendMessages_Then_are_sent_in_parallel() 
+			throws InterruptedException, TimeoutException {
 
 		final int numUsers = 4;
 		CountDownLatch latch = new CountDownLatch(numUsers-1);
-		DelayedAnswerWithCountDownForMockBuilder countDownLatch = new DelayedAnswerWithCountDownForMockBuilder(latch);
+		DelayedAnswerWithCountDownForMockBuilder countDownLatch = 
+				new DelayedAnswerWithCountDownForMockBuilder(latch);
 		ChatManager chatManager = new ChatManager(5);
 		List<User> users = new ArrayList<>();
 		
@@ -66,12 +65,14 @@ public class ChatUserSendMessageTest {
 	}
 
 	@Test
-	public void test_02_GIVEN_ChatManger_When_sendMessages_Then_are_received_in_order() throws InterruptedException, TimeoutException {
+	public void test_02_GIVEN_ChatManger_When_sendMessages_Then_are_received_in_order() 
+			throws InterruptedException, TimeoutException {
 		
 		int numMessages = 5;
 		long channelDelay = 500;
 		CountDownLatch latch = new CountDownLatch(5);
-		DelayedAnswerWithCountDownForMockBuilder countDownLatch = new DelayedAnswerWithCountDownForMockBuilder(latch);
+		DelayedAnswerWithCountDownForMockBuilder countDownLatch = 
+				new DelayedAnswerWithCountDownForMockBuilder(latch);
 		ChatManager chatManager = new ChatManager(5);
 				
 		User userSender = mock(TestUser.class);

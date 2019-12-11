@@ -10,9 +10,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import es.codeurjc.webchat.Chat;
 import es.codeurjc.webchat.ChatManager;
@@ -21,11 +18,13 @@ import es.codeurjc.webchat.User;
 public class ChatCloseTest {
 
 	@Test
-	public void test_01_GIVEN_ChatManger_When_closeChat_Then_allUserNotified() throws InterruptedException, TimeoutException {
+	public void test_01_GIVEN_ChatManger_When_closeChat_Then_allUserNotified() 
+			throws InterruptedException, TimeoutException {
 
 		final int numUsers = 3;
 		CountDownLatch latch = new CountDownLatch(numUsers);
-		DelayedAnswerWithCountDownForMockBuilder countDownLatch = new DelayedAnswerWithCountDownForMockBuilder(latch);
+		DelayedAnswerWithCountDownForMockBuilder countDownLatch = 
+				new DelayedAnswerWithCountDownForMockBuilder(latch);
 		ChatManager chatManager = new ChatManager(5);
 		List<User> users = new ArrayList<>();
 		
@@ -52,11 +51,14 @@ public class ChatCloseTest {
 	}
 	
 	@Test
-	public void test_02_GIVEN_ChatManger_When_closeChats_Then_chats_are_closed() throws Throwable {
+	public void test_02_GIVEN_ChatManger_When_closeChats_Then_chats_are_closed() 
+			throws Throwable {
+		
 		final int numUsers = 4;
 		final int numOfChatsPerUser = 50;
 		ChatManager	chatManager = new ChatManager(numUsers*numOfChatsPerUser);
-		TestConcurrencyManager concurrencyMngr = new TestConcurrencyManager(chatManager, numUsers*2);
+		TestConcurrencyManager concurrencyMngr = 
+				new TestConcurrencyManager(chatManager, numUsers*2);
 				
 		for (int i=0 ; i < numUsers*2; i++)
 		{
@@ -64,7 +66,8 @@ public class ChatCloseTest {
 			
 			if (userNumber % 2 == 0) {
 				concurrencyMngr.submitTask(
-						() -> this.whenForTest_02_usersCreatingChats(chatManager, userNumber, numOfChatsPerUser));
+						() -> this.whenForTest_02_usersCreatingChats(
+								chatManager, userNumber, numOfChatsPerUser));
 			} else {
 				concurrencyMngr.submitTask(
 						() -> this.whenForTest_02_closeAllChats(chatManager));
@@ -79,7 +82,9 @@ public class ChatCloseTest {
 		assertThat(chatManager.getChats().size()).isEqualTo(0);
 	}
 	
-	private boolean whenForTest_02_usersCreatingChats(ChatManager chatManager, final int userNumber, final int numOfChatsPerUser) throws InterruptedException, TimeoutException {
+	private boolean whenForTest_02_usersCreatingChats(
+			ChatManager chatManager, final int userNumber, final int numOfChatsPerUser) 
+					throws InterruptedException, TimeoutException {
 		
 		chatManager.newUser(new TestUser("userName_" + userNumber));		
 
@@ -91,7 +96,8 @@ public class ChatCloseTest {
 		return true;
 	}
 	
-	private boolean whenForTest_02_closeAllChats(ChatManager chatManager) throws InterruptedException, TimeoutException {
+	private boolean whenForTest_02_closeAllChats(ChatManager chatManager) 
+			throws InterruptedException, TimeoutException {
 		
 	for(Chat chat: chatManager.getChats())
 	{

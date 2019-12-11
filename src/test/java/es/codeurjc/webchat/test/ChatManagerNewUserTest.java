@@ -23,11 +23,13 @@ import es.codeurjc.webchat.User;
 public class ChatManagerNewUserTest {
 
 	@Test
-	public void test_01_GIVEN_Chat_When_newUser_Then_allUsersNotified() throws InterruptedException, TimeoutException {
+	public void test_01_GIVEN_Chat_When_newUser_Then_allUsersNotified() 
+			throws InterruptedException, TimeoutException {
 
 		final int numUsers = 3;
 		CountDownLatch latch = new CountDownLatch(numUsers);
-		DelayedAnswerWithCountDownForMockBuilder countDownLatch = new DelayedAnswerWithCountDownForMockBuilder(latch);
+		DelayedAnswerWithCountDownForMockBuilder countDownLatch = 
+				new DelayedAnswerWithCountDownForMockBuilder(latch);
 		ChatManager chatManager = new ChatManager(5);
 		List<User> users = new ArrayList<>();
 		
@@ -40,7 +42,9 @@ public class ChatManagerNewUserTest {
 		}
 		
 		for(User user: users) {
-			doAnswer(countDownLatch.build()).when(user).newUserInChat(any(Chat.class), any(User.class));
+			doAnswer(countDownLatch.build())
+				.when(user)
+				.newUserInChat(any(Chat.class), any(User.class));
 		}
 		
 		User newUser = mock(TestUser.class);
@@ -57,7 +61,8 @@ public class ChatManagerNewUserTest {
 	}
 	
 	@Test
-	public void test_02_GIVEN_ChatManger_When_newUser_Then_no_user_duplicated() throws Throwable {
+	public void test_02_GIVEN_ChatManger_When_newUser_Then_no_user_duplicated() 
+			throws Throwable {
 
 		ChatManager chatManager = new ChatManager(50);
 		final int numUsers = 10;
@@ -83,8 +88,4 @@ public class ChatManagerNewUserTest {
 		
 		return true;
 	}
-
-
-	
-	
 }
