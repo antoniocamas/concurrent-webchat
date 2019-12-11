@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import es.codeurjc.webchat.ChatManager;
+import es.codeurjc.webchat.User;
 
 public class TestConcurrencyManager {
 	
@@ -25,11 +26,24 @@ public class TestConcurrencyManager {
 		this.completionService = new ExecutorCompletionService<>(executor);
 	}
 	
+	public void assertThatAllExecutionsFinishOK(final int numTask)
+			throws InterruptedException, ExecutionException {
+		
+		assertThatExecutorsFinishedOk(numTask);
+		assertThatUserDontHaverErrors();
+	}
+		
+	public void shutdownAllExecutors() throws InterruptedException {
+		this.chatManager.close();
+		this.executor.shutdown();
+		this.executor.awaitTermination(2, TimeUnit.SECONDS);
+	}
+		
 	public void submitTask(Callable<Boolean> callable) {
 		this.completionService.submit(callable);
 	}
-
-	public void assertThatAllExecutionsFinishOK(final int numTask)
+	
+	private void assertThatExecutorsFinishedOk(final int numTask) 
 			throws InterruptedException, ExecutionException {
 		
 		for (int i = 0; i<numTask; i++) 
@@ -45,10 +59,11 @@ public class TestConcurrencyManager {
 				.isTrue();
 		}
 	}
-		
-	public void shutdownAllExecutors() throws InterruptedException {
-		this.chatManager.close();
-		this.executor.shutdown();
-		this.executor.awaitTermination(2, TimeUnit.SECONDS);
+
+	private void assertThatUserDontHaverErrors() {
+		for(User user: chatManager.getUsers()) {
+			TestUser testUser = (TestUser) user;
+			assertThat(testUser.getErrors()).isEmpty();
+		}
 	}
 }
